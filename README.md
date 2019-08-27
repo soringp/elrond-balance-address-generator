@@ -8,7 +8,7 @@ Original keygenerator: https://github.com/ElrondNetwork/elrond-go/tree/master/cm
 
 To compile the keygen, download the https://github.com/ElrondNetwork/elrond-go repository using the tutorial for your platform, described below, and replace cmd/keygenerator/main.go with my version.
 
-# Warning: Do not delete the original main.go, rename it to main.go.org, my version doesn't generate node identities, so you still need the original. I might introduce a separate folder in cmd as a better way to do this, but I'd have to test it first.
+**Warning: Do not delete the original main.go, rename it to main.go.org, my version doesn't generate node identities, so you still need the original. I might introduce a separate folder in cmd as a better way to do this, but I'd have to test it first.**
 
 Building on Linux:
 
