@@ -6,7 +6,7 @@ Uses the untouched elrond open source keygen code, but discards addresses not ma
 
 Original keygenerator: https://github.com/ElrondNetwork/elrond-go/tree/master/cmd/keygenerator
 
-To compile the keygen, download the https://github.com/ElrondNetwork/elrond-go repository using the tutorial at  and replace cmd/keygenerator/main.go with my version.
+To compile the keygen, download the https://github.com/ElrondNetwork/elrond-go repository using the tutorial for your platform, described below, and replace cmd/keygenerator/main.go with my version.
 
 Building on Linux:
 
