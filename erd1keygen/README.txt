@@ -1,15 +1,16 @@
-When in doubt run: keygenerator --help
-Version info: keygenrator --version
+When in doubt run: erd1keygen --help
+Version info: erd1keygen --version
 
-Running the keygenerator directly, without any params, will search for matching bech32 addresses using the default filter values (check defaults with --help)
+Running the erd1keygen directly, without any params, will search for matching bech32 addresses using the default filter values (check defaults with --help)
 
 Running with custom filters:
 
-A. Run with param and list of custom words: keygenerator --bech32-filter "aaa|bbb|ccc"
+A. Run with param and list of custom words: erd1keygen --bech32-filter "aaa|bbb|ccc"
 
 or
 
-B. Run the included find_filter_addresses.bat file. Edit bat with notepad to customize the words list.
+B. Run the included find_filter_addresses.bat file on Windows, or find_filter_addresses.sh on Linux (run chmod a+x on it first if needed). 
+Edit bat/sh with notepad/nano to customize the words list.
 
 Good luck!
 
