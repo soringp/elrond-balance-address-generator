@@ -3,14 +3,16 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/crypto"
 	"github.com/ElrondNetwork/elrond-go/crypto/signing"
 	"github.com/ElrondNetwork/elrond-go/crypto/signing/kyber"
 	"github.com/ElrondNetwork/elrond-go/data/state/addressConverters"
 	"github.com/urfave/cli"
-	"os"
-	"strings"
 )
 
 var (
@@ -89,6 +91,7 @@ func generateFiles(ctx *cli.Context) error {
 
 	var count = 1
 	var maxcount = 10
+	var total = uint64(0)
 	for count <= maxcount {
 
 		pkHexBalance, skHex, err := getIdentifierAndPrivateKey(genForBalanceSk)
@@ -110,7 +113,7 @@ func generateFiles(ctx *cli.Context) error {
 		var bingo = false
 
 		for i := 0; i < len(prefixes); i++ {
-			if strings.HasPrefix(bech32, "erd1" + prefixes[i]) {
+			if strings.HasPrefix(bech32, "erd1"+prefixes[i]) {
 				bingo = true
 				break
 			}
@@ -137,9 +140,14 @@ func generateFiles(ctx *cli.Context) error {
 			}
 
 			count = count + 1
-		} else {
-			continue
 		}
+
+		total = total + 1
+
+		if total >= 1000000 && total%1000000 == 0 {
+			fmt.Println(fmt.Sprintf("%dm (%s)", total/1000000, time.Now().Local().Format("01-02 15:04:05")))
+		}
+
 	} // end loop
 
 	return nil
