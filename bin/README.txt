@@ -1,1 +1,0 @@
-If you can't trust this executable, use the guide on the repository description to build from source code.
