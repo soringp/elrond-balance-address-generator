@@ -23,3 +23,14 @@ Contact me on Elrond's Riot channel for any issues or concerns you might have.
 Feel free to download and modify the code, but it would be nice to mention me and the Elrond team in the description. 
 
 Thanks!
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+![NFO](nfo.PNG)
