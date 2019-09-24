@@ -18,7 +18,7 @@ Read README found next to the binary or next to main.go on this repository for i
 
 Have fun!
 
-With some luck might find a gem like this:
+With some luck you might find a gem like this:
 
 ![Jack](one%20in%20a%20billion.PNG)
 
