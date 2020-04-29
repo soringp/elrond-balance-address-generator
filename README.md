@@ -22,4 +22,4 @@ With some luck you might find a gem like this:
 
 ![Jack](one%20in%20a%20billion.PNG)
 
-Contact me on Elrond's Riot channel for any issues or concerns you might have.
+Contact me on Elrond's TG channel for any issues or concerns you might have.
