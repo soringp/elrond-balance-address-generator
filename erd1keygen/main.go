@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ElrondNetwork/elrond-go/config"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/crypto"
 	"github.com/ElrondNetwork/elrond-go/crypto/signing"
-	"github.com/ElrondNetwork/elrond-go/crypto/signing/kyber"
-	"github.com/ElrondNetwork/elrond-go/data/state/addressConverters"
+	"github.com/ElrondNetwork/elrond-go/crypto/signing/ed25519"
+	"github.com/ElrondNetwork/elrond-go/data/state/factory"
 	"github.com/urfave/cli"
 )
 
@@ -38,16 +39,18 @@ VERSION:
 	}
 )
 
+const txSignPubkeyLen = 32
+
 func main() {
 	app := cli.NewApp()
 	cli.AppHelpTemplate = fileGenHelpTemplate
 	app.Name = "Key generation Tool (tweaked by @soringp)"
-	app.Version = "v0.0.1"
-	app.Usage = "This binary will generate balance address pem files, containing one private key"
+	app.Version = "v0.0.2"
+	app.Usage = "This binary will generate wallet address pem files, containing one private key"
 	app.Flags = []cli.Flag{bechFilter}
 	app.Authors = []cli.Author{
 		{
-			Name:  "The Elrond Team + @soringp (find me on Elrond's Riot channel)",
+			Name:  "The Elrond Team + @soringp (find me on Elrond's TG channel)",
 			Email: "contact@elrond.com",
 		},
 	}
@@ -83,7 +86,18 @@ func generateFiles(ctx *cli.Context) error {
 		}
 	}
 
-	genForBalanceSk := signing.NewKeyGenerator(getSuiteForBalanceSk())
+	genForBalanceSk := signing.NewKeyGenerator(ed25519.NewEd25519())
+
+	pubkeyConverter, err := factory.NewPubkeyConverter(
+		config.PubkeyConfig{
+			Length: txSignPubkeyLen,
+			Type:   factory.Bech32Format,
+		},
+	)
+
+	if err != nil {
+		return err
+	}
 
 	fmt.Println("Elrond KeyGen tweaked by @soringp")
 	fmt.Println("Generating 10 balance addresses using bech32 filtering... This might take a while...")
@@ -94,21 +108,12 @@ func generateFiles(ctx *cli.Context) error {
 	var total = uint64(0)
 	for count <= maxcount {
 
-		pkHexBalance, skHex, err := getIdentifierAndPrivateKey(genForBalanceSk)
+		sk, pk, err := generateKeys(genForBalanceSk)
 		if err != nil {
 			return err
 		}
 
-		ac, err := addressConverters.NewPlainAddressConverter(32, "")
-
-		adr, err := ac.CreateAddressFromHex(pkHexBalance)
-
-		if err != nil {
-			fmt.Println("For some peculiar reason I could not generate an addressConverter because ", err)
-			return nil
-		}
-
-		bech32, err := ac.ConvertToBech32(adr)
+		bech32 := pubkeyConverter.Encode(pk)
 
 		var bingo = false
 
@@ -128,7 +133,7 @@ func generateFiles(ctx *cli.Context) error {
 				return err
 			}
 
-			err = core.SaveSkToPemFile(balanceFile, pkHexBalance, skHex)
+			err = core.SaveSkToPemFile(balanceFile, bech32, []byte(hex.EncodeToString(sk)))
 
 			fmt.Println(fmt.Sprintf("Key %d/%d: %s", count, maxcount, bech32))
 
@@ -153,24 +158,17 @@ func generateFiles(ctx *cli.Context) error {
 	return nil
 }
 
-func getSuiteForBalanceSk() crypto.Suite {
-	return kyber.NewBlakeSHA256Ed25519()
-}
-
-func getIdentifierAndPrivateKey(keyGen crypto.KeyGenerator) (string, []byte, error) {
+func generateKeys(keyGen crypto.KeyGenerator) ([]byte, []byte, error) {
 	sk, pk := keyGen.GeneratePair()
 	skBytes, err := sk.ToByteArray()
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 
 	pkBytes, err := pk.ToByteArray()
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 
-	skHex := []byte(hex.EncodeToString(skBytes))
-	pkHex := hex.EncodeToString(pkBytes)
-
-	return pkHex, skHex, nil
+	return skBytes, pkBytes, nil
 }
