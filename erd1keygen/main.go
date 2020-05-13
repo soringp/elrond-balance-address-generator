@@ -11,7 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/crypto"
 	"github.com/ElrondNetwork/elrond-go/crypto/signing"
-	"github.com/ElrondNetwork/elrond-go/crypto/signing/ed25519"
+	"github.com/ElrondNetwork/elrond-go/crypto/signing/mcl"
 	"github.com/ElrondNetwork/elrond-go/data/state/factory"
 	"github.com/urfave/cli"
 )
@@ -33,20 +33,21 @@ VERSION:
    {{end}}
 `
 	bechFilter = cli.StringFlag{
-		Name:  "bech32-filter",
-		Usage: "Bech32 prefix filter, finds addresses starting with erd1 followed by any of the given values",
-		Value: "erd2|ddd2|eee2|fff2",
+		Name:  "filter",
+		Usage: "Prefix filter, finds addresses starting with the given values",
+		Value: "abc|def",
 	}
 )
 
 const txSignPubkeyLen = 32
+const blsPubkeyLen = 96
 
 func main() {
 	app := cli.NewApp()
 	cli.AppHelpTemplate = fileGenHelpTemplate
-	app.Name = "Key generation Tool (tweaked by @soringp)"
-	app.Version = "v0.0.2"
-	app.Usage = "This binary will generate wallet address pem files, containing one private key"
+	app.Name = "Validator Key generation Tool (tweaked by @soringp)"
+	app.Version = "v0.0.3"
+	app.Usage = "This binary will generate validator pem files, containing one private key"
 	app.Flags = []cli.Flag{bechFilter}
 	app.Authors = []cli.Author{
 		{
@@ -86,12 +87,12 @@ func generateFiles(ctx *cli.Context) error {
 		}
 	}
 
-	genForBalanceSk := signing.NewKeyGenerator(ed25519.NewEd25519())
+	genForBlockSigningSk := signing.NewKeyGenerator(mcl.NewSuiteBLS12())
 
 	pubkeyConverter, err := factory.NewPubkeyConverter(
 		config.PubkeyConfig{
-			Length: txSignPubkeyLen,
-			Type:   factory.Bech32Format,
+			Length: blsPubkeyLen,
+			Type:   factory.HexFormat,
 		},
 	)
 
@@ -100,25 +101,25 @@ func generateFiles(ctx *cli.Context) error {
 	}
 
 	fmt.Println("Elrond KeyGen tweaked by @soringp")
-	fmt.Println("Generating 10 balance addresses using bech32 filtering... This might take a while...")
+	fmt.Println("Generating 100 validator keys using filtering... This might take a while...")
 	fmt.Println("")
 
 	var count = 1
-	var maxcount = 10
+	var maxcount = 100
 	var total = uint64(0)
 	for count <= maxcount {
 
-		sk, pk, err := generateKeys(genForBalanceSk)
+		sk, pk, err := generateKeys(genForBlockSigningSk)
 		if err != nil {
 			return err
 		}
 
-		bech32 := pubkeyConverter.Encode(pk)
+		pkString := pubkeyConverter.Encode(pk)
 
 		var bingo = false
 
 		for i := 0; i < len(prefixes); i++ {
-			if strings.HasPrefix(bech32, "erd1"+prefixes[i]) {
+			if strings.HasPrefix(pkString, prefixes[i]) {
 				bingo = true
 				break
 			}
@@ -126,16 +127,16 @@ func generateFiles(ctx *cli.Context) error {
 
 		if bingo {
 
-			var balanceFileFileName = "./" + bech32 + ".pem"
+			var balanceFileFileName = "./" + pkString[0:10] + ".pem"
 
 			balanceFile, err = os.OpenFile(balanceFileFileName, os.O_CREATE|os.O_WRONLY, 0666)
 			if err != nil {
 				return err
 			}
 
-			err = core.SaveSkToPemFile(balanceFile, bech32, []byte(hex.EncodeToString(sk)))
+			err = core.SaveSkToPemFile(balanceFile, pkString, []byte(hex.EncodeToString(sk)))
 
-			fmt.Println(fmt.Sprintf("Key %d/%d: %s", count, maxcount, bech32))
+			fmt.Println(fmt.Sprintf("Key %d/%d: %s", count, maxcount, pkString[0:10]))
 
 			if balanceFile != nil {
 				err := balanceFile.Close()
