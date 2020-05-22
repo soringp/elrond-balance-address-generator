@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -35,7 +36,7 @@ VERSION:
 	bechFilter = cli.StringFlag{
 		Name:  "bech32-filter",
 		Usage: "Bech32 prefix filter, finds addresses starting with erd1 followed by any of the given values",
-		Value: "erd2|ddd2|eee2|fff2",
+		Value: "erd2;fff2;Rx:^[0-9]{7};ccc2",
 	}
 )
 
@@ -74,15 +75,20 @@ func generateFiles(ctx *cli.Context) error {
 
 	bechFilter := ctx.GlobalString(bechFilter.Name)
 
-	dirtyTerms := strings.Split(bechFilter, "|")
+	dirtyTerms := strings.Split(bechFilter, ";")
 	prefixes := []string{}
+	regexes := []string{}
 
 	for i := 0; i < len(dirtyTerms); i++ {
 
 		var term = strings.TrimSpace(dirtyTerms[i])
 
 		if len(term) > 0 {
-			prefixes = append(prefixes, term)
+			if strings.HasPrefix(term, "Rx:") && len(term) > 3 {
+				regexes = append(regexes, term[3:])
+			} else {
+				prefixes = append(prefixes, term)
+			}
 		}
 	}
 
@@ -117,10 +123,20 @@ func generateFiles(ctx *cli.Context) error {
 
 		var bingo = false
 
-		for i := 0; i < len(prefixes); i++ {
-			if strings.HasPrefix(bech32, "erd1"+prefixes[i]) {
+		for i := 0; i < len(regexes); i++ {
+			var expression = regexp.MustCompile(regexes[i])
+			if expression.MatchString(bech32[4:]) {
 				bingo = true
 				break
+			}
+		}
+
+		if !bingo {
+			for i := 0; i < len(prefixes); i++ {
+				if strings.HasPrefix(bech32, "erd1"+prefixes[i]) {
+					bingo = true
+					break
+				}
 			}
 		}
 

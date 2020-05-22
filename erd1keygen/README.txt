@@ -5,7 +5,9 @@ Running the erd1keygen directly, without any params, will search for matching be
 
 Running with custom filters:
 
-A. Run with param and list of custom words: erd1keygen --bech32-filter "aaa|bbb|ccc"
+A. Run with param and list of custom words: erd1keygen --bech32-filter "aaa;bbb;ccc"
+
+';' is the terms separator, used to be '|' but that is not compatible with regex 
 
 or
 
@@ -15,6 +17,10 @@ Edit bat/sh with notepad/nano to customize the words list.
 Good luck!
 
 Tip: lower your expectations, start with 3 or 4 letter words or combinations, even so some words will never be matched!
+
+Important!!!  Letters 'b','i','o' and number '1' are never present, replace them in your words with '6' for 'b', 'l' for 'i' or '1', and '0' for 'o'
+
+NEW: RegEx search, insted of a word, enter a regex with the "Rx:" prefix. Examples "Rx:^[0-9]{7};Rx:^[ac]{4}" finds addresses starting with 7 numbers, or 4 letters a or c
 
 Obs: 
 
